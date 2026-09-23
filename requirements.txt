@@ -1,0 +1,24 @@
+# AI 운전자 졸음 감지 및 자율 안전 로봇 시스템 의존성 목록
+#
+# [라즈베리파이에서 설치 시 필독] DEPLOY_MODEL.md 참고
+# - opencv-python은 pip으로 새로 설치하지 말고, `sudo apt install python3-opencv`로
+#   이미 깔려있는 시스템 cv2(Picamera2 연동 검증됨)를 그대로 쓰세요.
+# - 반드시 `python3 -m venv --system-site-packages venv` 로 venv를 만들어야
+#   시스템 cv2 / RPi.GPIO / picamera2 / PyQt5 를 그대로 물려받습니다.
+# - 아래 torch/torchvision/numpy 버전은 라즈베리파이 4(Cortex-A72) 전용 고정값입니다.
+#   pip이 알아서 고르는 최신 torch(2.4+)는 ARM 최적화 커널이 dot-product 명령어
+#   (asimddp)를 쓰는데 Cortex-A72는 이를 지원하지 않아 추론 중 "Illegal instruction"
+#   크래시가 발생합니다. 반드시 이 버전으로 고정해서 설치하세요.
+opencv-python>=4.7.0.72  # 개발 PC(노트북)에서만 사용. 라즈베리파이에서는 위 안내대로 시스템 cv2 사용
+Flask>=2.2.0
+PyQt5>=5.15.0
+
+# 딥러닝 YOLOv8 추론용 (best.pt 구동 시 필요)
+torch==2.2.2
+torchvision==0.17.2
+numpy<2,>=1.24.0
+ultralytics>=8.0.0
+
+# 라즈베리파이 GPIO 제어 (보드 환경)
+RPi.GPIO>=0.7.1
+gpiozero>=2.0

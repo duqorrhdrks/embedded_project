@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 운전자 안면 모니터링 및 자율 안전 로봇 관제</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 및 상태 배너 -->
+        <header class="header">
+            <div class="title-area">
+                <h1>AI 운전자 안면 모니터링 및 자율 안전 로봇 관제</h1>
+                <span class="badge" id="ai-model-badge">AI: 로딩 중...</span>
+            </div>
+            <div class="system-banner" id="system-banner">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="system-status-text">관제 시스템 상태 확인 중...</span>
+            </div>
+        </header>
+
+        <!-- 메인 그리드 레이아웃 -->
+        <main class="dashboard-grid">
+            <!-- 좌측: 비디오 스트림 -->
+            <section class="card video-card">
+                <div class="card-header">
+                    <h2>🎥 실시간 운전자 영상 모니터링 (실시간 카메라 환경)</h2>
+                    <span class="rec-indicator" id="rec-indicator">● 대기 중</span>
+                </div>
+                <div class="video-wrapper">
+                    <img src="/video_feed" alt="실시간 카메라 스트림" id="video-stream" onerror="this.src=''; this.alt='카메라 영상 신호 대기 중...';">
+                </div>
+                <div class="card-footer" id="rec-path-display">
+                    저장 폴더: recordings/
+                </div>
+            </section>
+
+            <!-- 우측: 하드웨어 및 안전 상태 -->
+            <section class="card-column">
+                <!-- 구동 모터 상태 -->
+                <div class="card">
+                    <h2>⚙️ 구동 모터 주행 상태</h2>
+                    <div class="status-row">
+                        <span>주행 모드:</span>
+                        <strong id="motor-state">STOPPED</strong>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-bar" id="motor-gauge" style="width: 0%;"></div>
+                    </div>
+                    <div class="gauge-label">
+                        <span>0%</span>
+                        <strong id="motor-speed-val">0 %</strong>
+                        <span>100%</span>
+                    </div>
+                </div>
+
+                <!-- 비상 경고등 상태 -->
+                <div class="card">
+                    <h2>🚨 비상 경고등 (Hazard Warning LED)</h2>
+                    <div class="status-row">
+                        <span>경고등 상태:</span>
+                        <strong id="hazard-state" class="text-muted">소등 (정상)</strong>
+                    </div>
+                    <div class="hazard-visual" id="hazard-visual">
+                        <span class="hazard-icon">⚠️</span>
+                        <span id="hazard-text">비상 경고등 정상</span>
+                    </div>
+                </div>
+
+                <!-- 최근 관제 기록 -->
+                <div class="card">
+                    <h2>📋 시스템 실시간 관제 기록</h2>
+                    <p class="event-box" id="event-log-text">시스템 준비 완료: 정상 주행 대기 중</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- 하단 컨트롤 버튼 바 -->
+        <footer class="control-panel">
+            <button class="btn btn-recover" id="btn-recover" onclick="recoverSystem()">
+                🟢 경보 해제 및 정상 주행 복귀
+            </button>
+            <button class="btn btn-danger" id="btn-stop" onclick="stopSystem()">
+                🛑 비상 정지 (긴급 제동)
+            </button>
+            <button class="btn btn-warning" id="btn-sim" onclick="toggleSimDrowsy()">
+                🧪 졸음 감지 모의 시험 [꺼짐]
+            </button>
+            <button class="btn btn-secondary" id="btn-drive" onclick="toggleDrive()">
+                🚗 차량 주행 시작
+            </button>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

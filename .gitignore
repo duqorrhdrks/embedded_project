@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+
+# 라즈베리파이 로컬 가상환경 (수 GB, torch 포함 — DEPLOY_MODEL.md 안내대로 각자 생성)
+venv/
+
+# 학습된 모델 가중치 (용량이 크고, 팀/버전마다 다른 파일이라 Git으로 관리하지 않음)
+# -> models/README.md 또는 DEPLOY_MODEL.md 안내에 따라 각자 배치
+models/*.pt
+models/*.onnx
+
+# 졸음 감지 이벤트 녹화 영상 (실제 얼굴이 촬영된 개인 영상이라 저장소에 포함하지 않음)
+recordings/*.mp4
+recordings/*.avi
+
+# 카메라 색상 디버깅 중 남은 테스트 스냅샷
+test_*.jpg
+
+# OS / 에디터
+.DS_Store
+*.swp

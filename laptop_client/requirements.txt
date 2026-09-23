@@ -1,0 +1,8 @@
+# 노트북 전용 의존성 (라즈베리파이 쪽 requirements.txt와 별개)
+# 노트북은 일반 PC이므로 torch/torchvision 버전 고정이 필요 없습니다 (pip이 알아서
+# GPU/CPU에 맞는 최신 버전을 선택하게 두세요). Pi4의 Illegal instruction 이슈는
+# 노트북(x86_64 또는 최신 ARM) 환경에는 해당되지 않습니다.
+opencv-python>=4.7.0.72
+ultralytics>=8.0.0
+requests>=2.28.0
+numpy>=1.24.0

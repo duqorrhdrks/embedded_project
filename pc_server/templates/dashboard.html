@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>졸음 감지 PC 관제</title>
+<style>
+  body { margin: 0; font-family: sans-serif; background: #111827; color: #e5e7eb; }
+  header { padding: 14px 20px; background: #1f2937; font-weight: bold; font-size: 18px; }
+  main { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; }
+  .card { background: #1f2937; border-radius: 10px; padding: 16px; }
+  #video { width: 640px; max-width: 100%; border-radius: 6px; background: #000; display: block; }
+  .side { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 16px; }
+  h3 { margin: 0 0 10px; font-size: 15px; color: #9ca3af; }
+  .row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  button { flex: 1; padding: 10px; border: 0; border-radius: 6px; font-size: 14px; cursor: pointer; color: #fff; background: #374151; }
+  button.on { background: #059669; } button.off { background: #dc2626; } button.blink { background: #d97706; }
+  button.recover { background: #2563eb; width: 100%; }
+  .ok { color: #34d399; } .bad { color: #f87171; } .warn { color: #fbbf24; }
+</style>
+</head>
+<body>
+<header>졸음 감지 PC 관제 (best(1).pt)</header>
+<main>
+  <div class="card"><img id="video" src="/video_feed" alt="라즈베리파이 카메라 영상"></div>
+  <div class="side">
+    <div class="card">
+      <h3>연결 상태</h3>
+      <div class="row"><span>라즈베리파이 명령 폴링</span><span id="pi">-</span></div>
+      <div class="row"><span>카메라 프레임 수신</span><span id="cam">-</span></div>
+      <div class="row"><span>추론 속도</span><span id="fps">-</span></div>
+    </div>
+    <div class="card">
+      <h3>인식 결과</h3>
+      <div class="row"><span>분류</span><span id="cls">-</span></div>
+      <div class="row"><span>Drowsy 확률</span><span id="prob">-</span></div>
+      <div class="row"><span>눈 감김 지속</span><span id="dur">-</span></div>
+      <div class="row"><span>졸음 확정</span><span id="confirmed">-</span></div>
+    </div>
+    <div class="card">
+      <h3>명령 (라즈베리파이가 가져감)</h3>
+      <div class="row"><span>모터</span><span id="motor">-</span></div>
+      <div class="row"><span>LED</span><span id="led">-</span></div>
+      <div class="row"><span>명령 번호 / 파이 반영</span><span id="seq">-</span></div>
+      <div class="btns">
+        <button class="on" onclick="send({motor:'on'})">모터 ON</button>
+        <button class="off" onclick="send({motor:'off'})">모터 OFF</button>
+      </div>
+      <div class="btns">
+        <button class="on" onclick="send({led:'on'})">LED ON</button>
+        <button class="off" onclick="send({led:'off'})">LED OFF</button>
+        <button class="blink" onclick="send({led:'blink'})">LED 점멸</button>
+      </div>
+      <button class="recover" onclick="post('/api/recover', {})">졸음 경보 해제 · 주행 복귀</button>
+      <div class="row" style="margin-top:10px">
+        <label><input type="checkbox" id="auto" onchange="post('/api/auto_safety', {enabled: this.checked})"> 졸음 확정 시 자동 모터 OFF + LED 점멸</label>
+      </div>
+    </div>
+  </div>
+</main>
+<script>
+  const $ = id => document.getElementById(id);
+  const mark = (el, text, cls) => { el.textContent = text; el.className = cls || ''; };
+
+  function post(url, body) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      .then(refresh);
+  }
+  const send = body => post('/api/command', body);
+
+  async function refresh() {
+    try {
+      const s = await (await fetch('/api/status')).json();
+      mark($('pi'), s.pi.online ? '연결됨' : '끊김', s.pi.online ? 'ok' : 'bad');
+      mark($('cam'), s.vision.receiving ? '수신 중' : '없음', s.vision.receiving ? 'ok' : 'bad');
+      $('fps').textContent = s.vision.infer_fps + ' fps';
+      mark($('cls'), s.vision.top_class, s.vision.eyes_closed ? 'bad' : 'ok');
+      $('prob').textContent = s.vision.drowsy_prob.toFixed(2);
+      $('dur').textContent = s.vision.closed_duration + ' 초';
+      mark($('confirmed'), s.vision.drowsy_confirmed ? '졸음!' : '정상', s.vision.drowsy_confirmed ? 'bad' : 'ok');
+      mark($('motor'), s.command.motor.toUpperCase() + ' (' + s.command.speed + '%)', s.command.motor === 'on' ? 'ok' : 'bad');
+      mark($('led'), s.command.led.toUpperCase(), s.command.led === 'off' ? '' : 'warn');
+      const synced = s.pi.ack_seq === s.command.seq;
+      mark($('seq'), '#' + s.command.seq + ' / ' + (synced ? '반영됨' : '대기 중'), synced ? 'ok' : 'warn');
+      $('auto').checked = s.auto_safety;
+    } catch (e) { mark($('pi'), '서버 응답 없음', 'bad'); }
+  }
+  setInterval(refresh, 500);
+  refresh();
+</script>
+</body>
+</html>

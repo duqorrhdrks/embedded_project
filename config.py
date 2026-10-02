@@ -87,3 +87,32 @@ class AutonomousPullOverConfig:
     ENABLE_PULL_OVER_EXTENSION = True # 갓길 주차 모듈 활성화 여부
     LANE_CAMERA_INDEX = 1             # 전방 차선 인식용 보조 USB 카메라 인덱스
     PULL_OVER_STEER_RATIO = 0.3       # 갓길 우측 이동 시 좌/우 모터 차등 조향 비율
+
+
+# ==============================================================================
+# 5. PC 중앙 서버 모드 설정 (PC: 인식+판단+웹 / 라즈베리파이: 카메라 송출+명령 실행)
+#    pc_server/pc_main.py 와 pi_agent/pi_agent.py 에서 사용합니다.
+# ==============================================================================
+class PCServerConfig:
+    # --- PC 쪽 ---
+    HOST = "0.0.0.0"
+    PORT = 8000
+    # best(1).pt = YOLOv8 분류(classify) 모델, 클래스: {0: 'Drowsy', 1: 'Non_Drowsy'}
+    MODEL_PATH = os.path.join(os.path.dirname(__file__), "models", "best_1.pt")
+    # 분류 모델에서 "졸음"으로 볼 클래스 이름 (대소문자 무시, 정확히 일치해야 함)
+    # ※ 부분 문자열 매칭을 쓰면 'non_drowsy'에도 'drowsy'가 포함돼 오판하므로 정확 일치로 비교합니다.
+    DROWSY_CLASS_NAMES = ["drowsy"]
+    DROWSY_PROB_THRESHOLD = 0.6        # Drowsy 확률이 이 값 이상일 때만 눈 감김(졸음)으로 판정
+    DROWSY_DURATION_THRESHOLD_SEC = 1.2
+    DROWSY_RECOVERY_TIME_SEC = 1.0
+    # 졸음 확정 시 자동으로 모터 OFF + LED 점멸 명령을 내릴지 여부
+    AUTO_SAFETY_ACTION = True
+
+    # --- 라즈베리파이 쪽 ---
+    # 라즈베리파이가 접속할 PC 서버 주소 (실행 시 --server 인자로 덮어쓸 수 있음)
+    PC_SERVER_URL = "http://172.30.6.155:8000"
+    FRAME_UPLOAD_FPS = 15              # PC로 보내는 카메라 프레임 수 (초당)
+    JPEG_QUALITY = 70
+    COMMAND_POLL_INTERVAL_SEC = 0.1    # 명령 확인 주기
+    # PC와 이 시간 이상 통신이 끊기면 안전을 위해 모터를 자동 정지
+    FAILSAFE_TIMEOUT_SEC = 2.0

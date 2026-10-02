@@ -89,6 +89,16 @@ class HazardLedController:
         self._set_led_hardware(False)
         logger.info("🟢 [비상등 LED] 비상등이 소등되었습니다. (정상 상태)")
 
+    def turn_on(self):
+        """점멸 없이 LED 상시 점등 (원격 명령 'led on' 용)"""
+        self.stop_blinking()
+        self._set_led_hardware(True)
+
+    def turn_off(self):
+        """LED 소등 (원격 명령 'led off' 용)"""
+        self.stop_blinking()
+        self._set_led_hardware(False)
+
     def _blink_worker(self):
         """비상등 점멸 백그라운드 루프"""
         state = False
